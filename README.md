@@ -10,13 +10,7 @@ Bot de twitter para obtener el tiempo restante para la llegada de un autobús de
 
 ### Tecnologías utilizadas
 
-* [Flask](http://flask.pocoo.org/) - Microframework para aplicaciones web en Python
-* [Celery](http://www.celeryproject.org/) - Gestor de tareas asíncronas con RabbitMQ como broker
-* [Tweepy](http://www.tweepy.org/) - Librería para el manejo de Twitter en Python
-* [Dropbox API](https://www.dropbox.com/developers/documentation/python#overview) - API propia de Dropbox para Python
-* [MeaningCloud API](https://www.meaningcloud.com/es/) - API para análisis de sentimiento
-* [Pandas](https://pandas.pydata.org/) - Librería para el análisis de datos en Python
-* [PlotLy API](https://plot.ly/python/) - API para la visualización de los datos
+* [Anypoint Platform](https://anypoint.mulesoft.com/home/)
 
 
 ### Funcionamiento
