@@ -1,2 +1,9 @@
 # BusCDZ
-Bot de Twitter para saber cuanto falta en llegar el bus en Cádiz
+
+Bot de twitter para obtener el tiempo restante de llegada de un autobús determinado en Cádiz.
+
+
+### Autores
+
+* **Miguel Ángel Álvarez García** - [GitHub](https://github.com/IamMiguelAA)
+* **Ana Gómez González** - [GitHub](https://github.com/angoglez)
