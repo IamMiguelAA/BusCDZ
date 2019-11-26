@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:quartz="http://www.mulesoft.org/schema/mule/quartz" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:twitter="http://www.mulesoft.org/schema/mule/twitter" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/twitter http://www.mulesoft.org/schema/mule/twitter/current/mule-twitter.xsd
+http://www.mulesoft.org/schema/mule/quartz http://www.mulesoft.org/schema/mule/quartz/current/mule-quartz.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+    <http:listener-config name="ConfiguracionHTTP" host="localhost" port="8081" doc:name="HTTP Listener Configuration"/>
+    <http:request-config name="HTTP_Request_Configuration" host="tranviacadiz.es" port="80" doc:name="HTTP Request Configuration"/>
+    <twitter:config name="Twitter__Configuration" accessKey="981537215003185152-msGc3R8XZs24Q9nwTLsjSmSPJQn4ry7" accessSecret="VkX9GHw57LmGH41PKipdjwJNMok3LiqF8wHkdiUTYis3m" consumerKey="LW13So0vrhqWhKY9tMbgXCJje" consumerSecret="nm5Q8wm7xGrPda4M3FeH0w69ShkHARAFcumV6La4TOSMEDCpnq" doc:name="Twitter: Configuration"/>
+    <flow name="buscdzFlow1" processingStrategy="synchronous">
+        <poll doc:name="Poll">
+            <fixed-frequency-scheduler frequency="10" timeUnit="SECONDS"/>
+            <watermark variable="lastModifiedID" default-expression="-1" selector="LAST" selector-expression="#[payload.id]"/>
+            <twitter:get-mentions-timeline config-ref="Twitter__Configuration" count="1" sinceId="#[flowVars['lastModifiedID']]" doc:name="Twitter"/>
+        </poll>
+        <set-variable variableName="stringfinal" value="" doc:name="String final"/>
+        <choice doc:name="Choice">
+            <when expression="#[payload != []]">
+                <json:object-to-json-transformer doc:name="Object to JSON"/>
+                <custom-transformer returnClass="eventos.EventoTwitter" class="eventos.EventoTwitter" doc:name="Java"/>
+                <set-variable variableName="parada" value="#[payload.getparada()]" doc:name="Parada Bus "/>
+                <set-variable variableName="idtweet" value="#[payload.idtweet()]" doc:name="ID Tweet"/>
+                <set-variable variableName="usuario" value="#[payload.status()]" doc:name="Usuario"/>
+                <set-variable variableName="emoticono" value="#[payload.emoticono()]" doc:name="Emoticono"/>
+                <set-variable variableName="emoticono2" value="#[payload.emoticono2()]" doc:name="Emoticono2"/>
+                <set-variable variableName="emoticono3" value="#[payload.emoticono3()]" doc:name="Emoticono3"/>
+                <choice doc:name="Choice">
+                    <when expression="#[(flowVars.parada != '-1') &amp;&amp; (flowVars.parada != '-2')]">
+                        <logger message="La parada es: #[flowVars.parada] el ID del tweet es: #[flowVars.idtweet] y el usuario es: #[flowVars.usuario]" level="INFO" doc:name="Logger"/>
+                        <http:request config-ref="HTTP_Request_Configuration" path="urbanos/panels/0/default.aspx?stop=#[flowVars.parada] " method="GET" doc:name="GET HTTP"/>
+                        <set-variable variableName="filePath" value="#['/Users/miguelangelalvarezgarcia/Desktop/buscdz']" doc:name="File Path"/>
+                        <set-variable variableName="fileName" value="#['busNew.txt']" doc:name="File Name"/>
+                        <file:outbound-endpoint path="#[flowVars.filePath]" outputPattern="#[flowVars.fileName]" responseTimeout="10000" doc:name="Fichero Descargado"/>
+                        <scripting:component doc:name="Python">
+                            <scripting:script engine="jython" file="/Users/miguelangelalvarezgarcia/Desktop/buscdz/fileProcessing.py"/>
+                        </scripting:component>
+                        <logger message="La cadena es: #[payload]" level="INFO" doc:name="Logger"/>
+                        <twitter:update-status config-ref="Twitter__Configuration" status="Hola @#[flowVars.usuario], aqu&#237; tienes: #[System.getProperty('line.separator')] #[System.getProperty('line.separator')]L&#237;nea -- Destino -- Llegada #[payload]" inReplyTo="#[flowVars.idtweet]" doc:name="Twitter"/>
+                    </when>
+                    <when expression="#[(flowVars.parada != '-1')]">
+                        <logger level="INFO" doc:name="Logger"/>
+                        <twitter:update-status config-ref="Twitter__Configuration" status="Hola @#[flowVars.usuario], esa parada no existe... #[flowVars.emoticono2], env&#237;anos otra #[flowVars.emoticono3]." inReplyTo="#[flowVars.idtweet]" doc:name="Twitter"/>
+                    </when>
+                    <otherwise>
+                        <logger level="INFO" doc:name="Logger"/>
+                        <twitter:update-status config-ref="Twitter__Configuration" status="Hola @#[flowVars.usuario], env&#237;anos el numero de la parada, por favor... #[flowVars.emoticono]" inReplyTo="#[flowVars.idtweet]" doc:name="Twitter"/>
+                    </otherwise>
+                </choice>
+            </when>
+            <otherwise>
+                <echo-component doc:name="Echo"/>
+            </otherwise>
+        </choice>
+    </flow>
+</mule>
