@@ -1,6 +1,6 @@
 # BusCDZ
 
-Bot de twitter para obtener el tiempo restante de llegada de un autobús determinado en Cádiz.
+Bot de twitter para obtener el tiempo restante para la llegada de un autobús determinado en Cádiz.
 
 
 ### Autores
