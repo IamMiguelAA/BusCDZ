@@ -5,7 +5,7 @@ Bot de twitter para obtener el tiempo restante para la llegada de un autobús de
 
 ### Autores
 
-* **Miguel Ángel Álvarez García** - [GitHub](https://github.com/IamMiguelAA)
+* **Miguel Ángel Álvarez García** - [GitHub](https://github.com/bymatech)
 * **Ana Gómez González** - [GitHub](https://github.com/angoglez)
 
 ### Tecnologías utilizadas
